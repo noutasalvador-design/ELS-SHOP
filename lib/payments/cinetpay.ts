@@ -25,7 +25,8 @@ function getConfig(): CinetPayConfig {
  * the official API flow, persisted order, idempotency and server notification
  * verification are implemented and tested with merchant credentials.
  */
-export async function initializeCinetPayPayment(_input: PaymentInitInput): Promise<never> {
+export async function initializeCinetPayPayment(input: PaymentInitInput): Promise<never> {
+  void input;
   getConfig();
   throw new Error("Checkout is not enabled yet. Implement and test the official CinetPay flow before accepting real payments.");
 }
