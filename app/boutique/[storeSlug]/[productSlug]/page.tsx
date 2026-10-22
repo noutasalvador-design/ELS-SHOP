@@ -18,7 +18,7 @@ export async function generateMetadata({params}:PageProps):Promise<Metadata>{
 }
 export default async function ProductPage({params}:PageProps){
  const {storeSlug,productSlug}=await params;
- let product;
+ let product: Awaited<ReturnType<typeof getProduct>>;
  try{product=await getProduct(storeSlug,productSlug);}catch{notFound();}
  if(!product)notFound();
  return <main className="catalogue-shell"><div className="container"><Link href="/catalogue" className="auth-back"><ArrowLeft size={15}/> Retour au catalogue</Link>
