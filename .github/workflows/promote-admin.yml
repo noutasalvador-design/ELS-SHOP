@@ -1,0 +1,48 @@
+name: Attribuer le rôle administrateur ELS SHOP
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Tapez MAKE_ADMIN pour confirmer l’attribution du rôle"
+        required: true
+        type: string
+
+jobs:
+  promote-admin:
+    if: ${{ inputs.confirm == 'MAKE_ADMIN' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm install --no-audit --no-fund
+
+      - name: Vérifier les paramètres sans afficher les secrets
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          ELS_ADMIN_EMAIL: ${{ vars.ELS_ADMIN_EMAIL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::Le secret NEON_DATABASE_URL est absent des secrets GitHub Actions."
+            exit 1
+          fi
+          if [ -z "$ELS_ADMIN_EMAIL" ]; then
+            echo "::error::La variable ELS_ADMIN_EMAIL est absente des variables GitHub Actions."
+            exit 1
+          fi
+
+      - name: Attribuer le rôle ADMIN au compte préconfiguré
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          ELS_ADMIN_EMAIL: ${{ vars.ELS_ADMIN_EMAIL }}
+          ELS_ADMIN_CONFIRM: ${{ inputs.confirm }}
+        run: npm run admin:promote
