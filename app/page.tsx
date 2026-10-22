@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowDownRight, ArrowRight, ChevronDown, CreditCard, FileText, Globe2, Headphones, Heart, House, Laptop, LockKeyhole, PackageCheck, Search, ShieldCheck, Shirt, ShoppingCart, Smartphone, Store } from "lucide-react";
 
 const categories = [
@@ -15,7 +16,7 @@ const products = [
   { title: "Pack de modèles pour entrepreneurs", category: "Produit numérique", price: "4 500 FCFA", country: "Téléchargement", rating: "5,0", tag: "Numérique", image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=700&q=85" }
 ];
 function Logo() {
-  return <a className="brand" href="/" aria-label="ELS SHOP MARKETPLACE, accueil"><span className="brand-mark">E.</span><span>ELS SHOP<span style={{ color: "#3c7a53" }}>.</span></span></a>;
+  return <Link className="brand" href="/" aria-label="ELS SHOP MARKETPLACE, accueil"><span className="brand-mark">E.</span><span>ELS SHOP<span style={{ color: "#3c7a53" }}>.</span></span></Link>;
 }
 export default function HomePage() {
   return <>
