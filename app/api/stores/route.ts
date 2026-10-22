@@ -12,6 +12,20 @@ const schema = z.object({
   countryCode: z.string().trim().toUpperCase().refine(isMarketCountryCode, "Pays non encore activé.")
 });
 
+export async function GET() {
+  const session = await readSession();
+  if (!session) return NextResponse.json({ store: null }, { status: 200, headers: { "Cache-Control": "no-store" } });
+  try {
+    const store = await prisma.store.findUnique({
+      where: { ownerId: session.userId },
+      select: { id: true, name: true, slug: true, description: true, countryCode: true, currency: true, isVerified: true, isActive: true, createdAt: true, _count: { select: { products: true } } }
+    });
+    return NextResponse.json({ store }, { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return NextResponse.json({ error: "La boutique est temporairement indisponible." }, { status: 503 });
+  }
+}
+
 export async function POST(request: Request) {
   const session = await readSession();
   if (!session) return NextResponse.json({ error: "Connexion requise." }, { status: 401 });
