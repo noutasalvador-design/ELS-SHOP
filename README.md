@@ -1,85 +1,37 @@
-# ELS STAGE
+# ELS SHOP MARKETPLACE
 
-Plateforme complète de demandes de stages en ligne, créée par **Salvador**.
+Marketplace multi-vendeurs pour découvrir, acheter et vendre des produits physiques et numériques sur plusieurs marchés africains.
 
-## Fonctionnalités
+## Stack technique
+- Next.js + TypeScript
+- Tailwind CSS
+- PostgreSQL (Neon) + Prisma
+- CinetPay comme fournisseur de paiement à intégrer et valider
+- Déploiement prévu sur Vercel
 
-- Accueil public ELS STAGE
-- Inscription / connexion
-- Espace candidat
-- Profil candidat
-- Création et suivi de demandes de stage
-- Upload CV et lettre de motivation
-- Statuts : EN_ATTENTE, EN_ETUDE, ACCEPTEE, REFUSEE
-- Espace administrateur
-- Gestion des candidats
-- Gestion des demandes
-- Journalisation de base
-- SQLite pour démarrer immédiatement
-- Architecture prête pour PostgreSQL
-- API REST séparée du frontend
-- Sécurité : Helmet, JWT en cookie HttpOnly, bcrypt, validation et limite de fichiers
+## Démarrage local
+1. Installer Node.js 20 ou supérieur.
+2. Installer les dépendances avec `npm install`.
+3. Copier `.env.example` vers `.env` et renseigner `DATABASE_URL`.
+4. Préparer la base : `npm run db:push`.
+5. Lancer le projet : `npm run dev`.
+6. Ouvrir `http://localhost:3000`.
 
-## Installation
+## Variables d'environnement
+Voir `.env.example`. Ne jamais publier les fichiers `.env` ni exposer des secrets dans des variables `NEXT_PUBLIC_*`.
 
-1. Installer Node.js LTS.
-2. Ouvrir le dossier dans VS Code.
-3. Dans le terminal :
+## Déploiement Vercel
+1. Importer ce dépôt GitHub dans Vercel.
+2. Définir les variables d'environnement dans les réglages Vercel.
+3. Utiliser une base PostgreSQL Neon avec SSL.
+4. Déployer et vérifier `/api/health`.
+5. Exécuter les migrations de base de données selon le workflow de déploiement retenu.
 
-```bash
-npm install
-```
+## Paiements
+L'adaptateur CinetPay est préparé côté serveur, mais **les paiements réels ne sont pas activés dans ce socle**. Il faut implémenter et tester l'initialisation, la notification serveur, la vérification de référence/montant/devise et l'idempotence avec les identifiants marchands de chaque pays avant d'accepter des paiements.
 
-4. Copier `.env.example` vers `.env`.
-5. Modifier au minimum `JWT_SECRET` et `ADMIN_PASSWORD`.
-6. Lancer :
+## État des fonctionnalités
+La vitrine actuelle est une première interface avec produits de démonstration. Les comptes, boutiques connectées, commandes réelles, fichiers numériques protégés et l'administration restent à développer. Voir [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-```bash
-npm start
-```
-
-7. Ouvrir :
-
-`http://localhost:3000`
-
-## Compte administrateur
-
-Les valeurs viennent de `.env` :
-
-- Email : `ADMIN_EMAIL`
-- Mot de passe : `ADMIN_PASSWORD`
-
-Change-les avant toute mise en ligne.
-
-## Passer à PostgreSQL
-
-1. Créer une base PostgreSQL.
-2. Dans `.env` :
-
-```env
-DATABASE_MODE=postgres
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/els_stage
-```
-
-3. Redémarrer :
-
-```bash
-npm start
-```
-
-Le serveur crée automatiquement les tables.
-
-## Mise en production
-
-- Utiliser HTTPS.
-- Mettre un `JWT_SECRET` long et aléatoire.
-- Utiliser PostgreSQL.
-- Mettre les documents dans un stockage privé adapté plutôt que dans le serveur web.
-- Ne jamais publier `.env`.
-- Faire des sauvegardes de la base.
-- Ajouter un nom de domaine et un reverse proxy.
-- Configurer les variables d'environnement du serveur.
-
-## Auteur
-
-**Salvador — ELS STAGE**
+## Licence
+Tous droits réservés — ELS SHOP MARKETPLACE.
