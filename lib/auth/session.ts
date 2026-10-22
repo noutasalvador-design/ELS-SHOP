@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
+import { prisma } from "@/lib/prisma";
 
 export const SESSION_COOKIE = "els_shop_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
@@ -33,9 +34,15 @@ export async function readSession(): Promise<Session | null> {
       algorithms: ["HS256"]
     });
     const userId = payload.sub;
-    const role = payload.role;
-    if (!userId || (role !== "CUSTOMER" && role !== "SELLER" && role !== "ADMIN")) return null;
-    return { userId, role };
+    if (!userId) return null;
+    // Re-read the current role and activation status so revoked accounts and role changes
+    // take effect immediately instead of waiting for the signed cookie to expire.
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, isActive: true }
+    });
+    if (!user || !user.isActive) return null;
+    return { userId, role: user.role };
   } catch {
     return null;
   }
