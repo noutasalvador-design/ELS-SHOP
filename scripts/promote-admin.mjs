@@ -18,14 +18,11 @@ async function main() {
 
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, email: true, role: true, store: { select: { id: true } } }
+    select: { id: true, email: true, role: true, store: { select: { id: true, name: true } } }
   });
 
   if (!user) {
     throw new Error("Aucun compte ne correspond à cette adresse. Créez d’abord le compte via le site, puis relancez le script.");
-  }
-  if (user.store) {
-    throw new Error("Ce compte possède déjà une boutique. Pour conserver les fonctions vendeur, créez un compte administrateur séparé avec une autre adresse e-mail.");
   }
   if (user.role === "ADMIN") {
     console.log("Ce compte possède déjà le rôle ADMIN. Aucune modification nécessaire.");
@@ -37,7 +34,11 @@ async function main() {
     data: { role: "ADMIN" }
   });
 
-  console.log(`Rôle ADMIN attribué au compte ${user.email}. Connectez-vous à ELS SHOP puis ouvrez /administration.`);
+  if (user.store) {
+    console.log(`Rôle ADMIN attribué à ${user.email}. Sa boutique « ${user.store.name} » est conservée et les fonctions vendeur sont autorisées pour les comptes ADMIN.`);
+  } else {
+    console.log(`Rôle ADMIN attribué au compte ${user.email}. Connectez-vous à ELS SHOP puis ouvrez /administration.`);
+  }
 }
 
 main()
