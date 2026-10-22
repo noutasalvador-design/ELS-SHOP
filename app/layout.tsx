@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://els-shop-marketplace.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://els-shop-marketplace.vercel.app");
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: "ELS SHOP MARKETPLACE — Achetez et vendez en Afrique", template: "%s | ELS SHOP MARKETPLACE" },
