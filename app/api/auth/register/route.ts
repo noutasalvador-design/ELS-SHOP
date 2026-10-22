@@ -13,6 +13,14 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  // Validate session configuration before creating the user, otherwise a missing secret
+  // could create an account but fail to issue its session cookie.
+  const authSecret = process.env.AUTH_SECRET;
+  if (!authSecret || authSecret.length < 32) {
+    console.error("[auth/register] AUTH_SECRET is missing or too short.");
+    return NextResponse.json({ error: "La configuration de sécurité du site est incomplète. Réessayez plus tard." }, { status: 503 });
+  }
+
   const raw = await request.json().catch(() => null);
   const parsed = schema.safeParse(raw);
   if (!parsed.success) return NextResponse.json({ error: "Vérifiez les informations saisies. Le mot de passe doit contenir au moins 10 caractères." }, { status: 400 });
@@ -34,8 +42,11 @@ export async function POST(request: Request) {
     return applySessionCookie(NextResponse.json({ user }, { status: 201 }), token);
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
-      return NextResponse.json({ error: "Impossible de créer ce compte avec ces informations." }, { status: 409 });
+      return NextResponse.json({ error: "Cette adresse e-mail possède déjà un compte. Connectez-vous ou utilisez une autre adresse." }, { status: 409 });
     }
-    return NextResponse.json({ error: "Le service est temporairement indisponible." }, { status: 503 });
+    // Log only a Prisma/error code, never credentials, request bodies, or connection strings.
+    const errorCode = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "UNKNOWN";
+    console.error("[auth/register] Registration failed:", errorCode);
+    return NextResponse.json({ error: "Le service est temporairement indisponible. Vérifiez la configuration du site ou réessayez plus tard." }, { status: 503 });
   }
 }
