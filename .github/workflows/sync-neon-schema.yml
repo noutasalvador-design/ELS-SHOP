@@ -1,0 +1,39 @@
+name: Synchroniser le schéma Prisma avec Neon
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Tapez SYNC pour autoriser la synchronisation du schéma"
+        required: true
+        type: string
+
+jobs:
+  sync-database:
+    if: ${{ inputs.confirm == 'SYNC' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer les dépendances
+        run: npm install --no-audit --no-fund
+
+      - name: Vérifier le schéma Prisma
+        run: npx prisma validate
+
+      - name: Synchroniser les tables
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::Le secret NEON_DATABASE_URL doit être configuré dans GitHub Actions."
+            exit 1
+          fi
+          npx prisma db push
