@@ -20,7 +20,7 @@ export default function CataloguePage(){
   catch(e){setError(e instanceof Error?e.message:"Impossible de charger les produits.");setItems([]);}
   finally{setLoading(false);}
  }
- useEffect(()=>{load("","","");},[]);
+ useEffect(()=>{const params=new URLSearchParams(window.location.search);const initialQ=params.get("q")||"";setQ(initialQ);load(initialQ,"","");},[]);
  function submit(e:FormEvent){e.preventDefault();load(q,country,type);}
  return <main className="catalogue-shell"><div className="container">
   <Link href="/" className="auth-back">← Retour à l’accueil</Link>
