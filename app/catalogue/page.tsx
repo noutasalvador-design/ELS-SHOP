@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Search, SlidersHorizontal } from "lucide-react";
 
@@ -13,14 +13,14 @@ const countryNames:Record<string,string>={BJ:"Bénin",CI:"Côte d’Ivoire",SN:"
 function formatPrice(amount:number,currency:string){try{return new Intl.NumberFormat("fr-FR",{style:"currency",currency,maximumFractionDigits:0}).format(amount);}catch{return amount.toLocaleString("fr-FR")+" "+currency;}}
 export default function CataloguePage(){
  const [items,setItems]=useState<Product[]>([]);const [q,setQ]=useState("");const [country,setCountry]=useState("");const [type,setType]=useState("");const [loading,setLoading]=useState(true);const [error,setError]=useState("");const [total,setTotal]=useState(0);
- async function load(search=q,selectedCountry=country,selectedType=type){
+ const load = useCallback(async (search:string,selectedCountry:string,selectedType:string) => {
   setLoading(true);setError("");
   const params=new URLSearchParams();if(search.trim())params.set("q",search.trim());if(selectedCountry)params.set("country",selectedCountry);if(selectedType)params.set("type",selectedType);
   try{const response=await fetch("/api/products?"+params.toString(),{cache:"no-store"});const data:ApiResult=await response.json();if(!response.ok)throw new Error(data.error||"Catalogue indisponible.");setItems(data.items||[]);setTotal(data.total||0);}
   catch(e){setError(e instanceof Error?e.message:"Impossible de charger les produits.");setItems([]);}
   finally{setLoading(false);}
- }
- useEffect(()=>{const params=new URLSearchParams(window.location.search);const initialQ=params.get("q")||"";setQ(initialQ);load(initialQ,"","");},[]);
+ },[]);
+ useEffect(()=>{const params=new URLSearchParams(window.location.search);const initialQ=params.get("q")||"";setQ(initialQ);load(initialQ,"","");},[load]);
  function submit(e:FormEvent){e.preventDefault();load(q,country,type);}
  return <main className="catalogue-shell"><div className="container">
   <Link href="/" className="auth-back">← Retour à l’accueil</Link>
