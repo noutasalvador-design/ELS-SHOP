@@ -26,9 +26,6 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Vérifier le schéma Prisma
-        run: npx prisma validate
-
-      - name: Synchroniser les tables
         env:
           DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
         run: |
@@ -36,4 +33,9 @@ jobs:
             echo "::error::Le secret NEON_DATABASE_URL doit être configuré dans GitHub Actions."
             exit 1
           fi
-          npx prisma db push
+          npx prisma validate
+
+      - name: Synchroniser les tables
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: npx prisma db push
