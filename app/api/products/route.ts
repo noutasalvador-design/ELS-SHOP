@@ -54,7 +54,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const session = await readSession();
   if (!session) return NextResponse.json({ error: "Connexion requise." }, { status: 401 });
-  if (session.role !== "SELLER") return NextResponse.json({ error: "Créez une boutique vendeur avant de publier un produit." }, { status: 403 });
+  // An administrator who owns a store can still manage products in that store.
+  if (session.role !== "SELLER" && session.role !== "ADMIN") {
+    return NextResponse.json({ error: "Créez une boutique vendeur avant de publier un produit." }, { status: 403 });
+  }
 
   const raw = await request.json().catch(() => null);
   const parsed = createSchema.safeParse(raw);
