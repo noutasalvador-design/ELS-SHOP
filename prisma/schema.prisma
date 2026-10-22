@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum UserRole { CUSTOMER SELLER ADMIN }
+enum ProductType { PHYSICAL DIGITAL }
+enum ProductStatus { DRAFT ACTIVE PAUSED ARCHIVED }
+enum OrderStatus { PENDING_PAYMENT PAID PROCESSING SHIPPED DELIVERED CANCELLED REFUND_PENDING REFUNDED }
+enum PaymentStatus { CREATED PENDING SUCCEEDED FAILED REFUNDED }
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  role         UserRole @default(CUSTOMER)
+  countryCode  String   @default("BJ")
+  phone        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  store        Store?
+  orders       Order[]
+}
+model Store {
+  id          String   @id @default(cuid())
+  ownerId     String   @unique
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  countryCode String
+  currency    String   @default("XOF")
+  isVerified  Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  products    Product[]
+  orderItems  OrderItem[]
+}
+model Product {
+  id              String        @id @default(cuid())
+  storeId         String
+  title           String
+  slug            String
+  description     String        @db.Text
+  type            ProductType
+  status          ProductStatus @default(DRAFT)
+  priceMinor      Int
+  currency        String
+  countryCode     String
+  stockQuantity   Int?
+  digitalAssetKey String?
+  imageUrls       String[]      @default([])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  store           Store         @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  orderItems      OrderItem[]
+  @@unique([storeId, slug])
+  @@index([status, countryCode, type])
+  @@index([storeId, createdAt])
+}
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  customerId      String
+  status          OrderStatus @default(PENDING_PAYMENT)
+  subtotalMinor   Int
+  shippingMinor   Int         @default(0)
+  totalMinor      Int
+  currency        String
+  countryCode     String
+  shippingAddress Json?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  customer        User        @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  items           OrderItem[]
+  payment         Payment?
+  @@index([customerId, createdAt])
+  @@index([status, createdAt])
+}
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  productId      String
+  storeId        String
+  quantity       Int
+  unitPriceMinor Int
+  currency       String
+  order          Order   @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  product        Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  store          Store   @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  @@index([orderId])
+  @@index([storeId, orderId])
+}
+model Payment {
+  id               String        @id @default(cuid())
+  orderId          String        @unique
+  provider         String
+  providerReference String?      @unique
+  status           PaymentStatus @default(CREATED)
+  amountMinor      Int
+  currency         String
+  countryCode      String
+  idempotencyKey   String        @unique
+  providerPayload  Json?
+  paidAt           DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  order            Order         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  @@index([status, createdAt])
+}
